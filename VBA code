@@ -1,0 +1,61 @@
+Sub ListMailsInFolder()
+
+    Set xlApp = CreateObject("Excel.Application")
+    xlApp.Visible = True
+    Set xlBook = xlApp.Workbooks.Add
+    Set xlSheet = xlBook.Sheets(1)
+    i = 1
+    
+    xlSheet.Range("a1").Offset(0) = "MailID"
+    xlSheet.Range("a1").Offset(0, 1) = "SentOn"
+    xlSheet.Range("a1").Offset(0, 2) = "Sender"
+    xlSheet.Range("a1").Offset(0, 3) = "To"
+    xlSheet.Range("a1").Offset(0, 4) = "CC"
+    xlSheet.Range("a1").Offset(0, 5) = "Subject"
+    xlSheet.Range("a1").Offset(0, 6) = "Body"
+    xlSheet.Range("a1").Offset(0, 7) = "Attachments"
+    
+    Dim objNS As Outlook.NameSpace
+    Dim objFolder As Outlook.MAPIFolder
+
+    Set objNS = GetNamespace("MAPI")
+    Set objFolder = objNS.Folders("[!!!] folder of a special account name")
+    
+    Set Item = objFolder.Items(1)
+    For Each Item In objFolder.Items
+        If TypeName(Item) = "MailItem" Then
+            ' ... do stuff here ...
+            'Debug.Print Item.ConversationTopic
+            
+            xlSheet.Range("a1").Offset(i) = "[!!!] special ID for mailbox being processed" & i 
+            
+            Select Case Item.MessageClass
+                Case "IPM.Note"
+                    
+                    xlSheet.Range("a1").Offset(i, 1) = Item.SentOn
+                    xlSheet.Range("a1").Offset(i, 2) = Item.Sender
+                    xlSheet.Range("a1").Offset(i, 3) = Item.To
+                    xlSheet.Range("a1").Offset(i, 4) = Item.CC
+                    xlSheet.Range("a1").Offset(i, 5) = Item.Subject
+                    xlSheet.Range("a1").Offset(i, 6) = Item.Body
+                    
+                    For Each a In Item.Attachments
+                        attStr = attStr & a.fileName & ";"
+                    Next a
+                    
+                    xlSheet.Range("a1").Offset(i, 7) = attStr
+                    attStr = ""
+                    
+                    i = i + 1
+                
+                Case Else
+                    xlSheet.Range("a1").Offset(i, 5) = Item.Subject
+                    xlSheet.Range("a1").Offset(i, 6) = Item.MessageClass
+                    i = i + 1
+            
+            End Select
+            
+        End If
+    Next
+
+End Sub
